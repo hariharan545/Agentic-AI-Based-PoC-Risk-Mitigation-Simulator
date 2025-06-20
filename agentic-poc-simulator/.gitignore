@@ -1,0 +1,37 @@
+# Node.js
+node_modules/
+backend/node-api/node_modules/
+frontend/node_modules/
+
+# Python
+*.pyc
+__pycache__/
+backend/python-agents/venv/
+backend/python-agents/.env
+
+# Vite/React
+frontend/dist/
+
+# Build output
+*.log
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+
+# Python vector store and processed data
+backend/python-agents/data/processed/
+backend/python-agents/data/vector_store/
+
+# VSCode
+.vscode/
+
+# Misc
+*.swp
+*.swo 
