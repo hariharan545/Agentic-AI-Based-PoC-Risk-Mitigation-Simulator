@@ -1,50 +1,56 @@
-# This script implements an autonomous AI agent using LangGraph's state machine framework.
-# The agent is implemented as a LangGraph graph with a single node for budget stress testing.
 import os
 import sys
 import json
-import time
 from dotenv import load_dotenv
-from langgraph.graph import StateGraph, END
+from langchain.agents import initialize_agent, Tool
+from langchain.chat_models import ChatOpenAI
 
 # Load environment variables
 load_dotenv()
-gemini_api_key = os.getenv("GEMINI_API_KEY")
-if not gemini_api_key:
-    sys.exit("GEMINI_API_KEY not found in .env file")
+openai_api_key = os.getenv("OPENAI_API_KEY")
+if not openai_api_key:
+    sys.exit("OPENAI_API_KEY not found in .env file")
 
-def stress_test_budget(state):
-    user_input = state["user_input"]
+def stress_test_budget(query: str) -> str:
+    """
+    Stress-tests a budget against a timeline and project scope.
+    This is a placeholder and returns a mock analysis.
+    """
     # In a real implementation, this tool could use more structured input
     # (budget, timeline, team size) to perform calculations.
-    return {
-        "result": (
-            "Budget stress test indicates a potential 20% cost overrun if the project timeline is extended by one month. "
-            "Recommend re-evaluating the scope of the MVP features."
-        )
-    }
+    return "Budget stress test indicates a potential 20% cost overrun if the project timeline is extended by one month. Recommend re-evaluating the scope of the MVP features."
 
-# Define the LangGraph state and graph
-class BudgetState(dict):
-    pass
+tools = [
+    Tool(
+        name="BudgetStressTestTool",
+        func=stress_test_budget,
+        description="Stress-tests a budget against a project timeline and scope."
+    )
+]
 
-graph = StateGraph(BudgetState)
-graph.add_node("stress_test", stress_test_budget)
-graph.set_entry_point("stress_test")
-graph.add_edge("stress_test", END)
-graph.set_finish_point("stress_test")
-budget_graph = graph.compile()
+agent = initialize_agent(
+    tools=tools,
+    llm=ChatOpenAI(openai_api_key=openai_api_key, temperature=0, model_name="gpt-3.5-turbo"),
+    agent="zero-shot-react-description",
+    verbose=True
+)
 
 def main():
     """
-    Main execution function for the budget agent using LangGraph.
+    Main execution function for the budget agent.
     """
     if len(sys.argv) > 1:
         user_input_json = sys.argv[1]
         user_input = json.loads(user_input_json)
-        state = {"user_input": user_input}
-        result = budget_graph.invoke(state)
-        print(json.dumps({"response": result["result"]}))
+        
+        prompt = (
+            f"Stress-test a budget of {user_input.get('budget', 'Not specified')} "
+            f"for a project with timeline: {user_input.get('timeline', 'Not specified')} "
+            f"and description: {user_input.get('description', 'Not specified')}."
+        )
+        
+        response = agent.run(prompt)
+        print(json.dumps({"response": response}))
     else:
         print(json.dumps({"error": "No input provided"}))
 

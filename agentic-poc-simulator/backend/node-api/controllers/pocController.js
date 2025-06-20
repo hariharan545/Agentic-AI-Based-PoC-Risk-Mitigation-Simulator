@@ -1,4 +1,4 @@
-const { runOrchestrator } = require('../utils/agentRunner');
+const runAgent = require('../utils/agentRunner');
 const PocReport = require('../models/PocReport'); // Assuming a Mongoose model
 
 // @desc    Submit a PoC for analysis and get a report
@@ -6,16 +6,33 @@ const PocReport = require('../models/PocReport'); // Assuming a Mongoose model
 // @access  Public
 exports.submitPoc = async (req, res, next) => {
     try {
-        // Ensure required fields are present
-        const userInput = {
-            project_name: req.body.project_name || "Default Project Name",
-            description: req.body.description || "Default project description.",
-            ...req.body
-        };
+        const userInput = req.body;
 
-        // Run the full orchestrator pipeline
-        const orchestratorResult = await runOrchestrator(userInput);
-        const finalReport = orchestratorResult.final_report || orchestratorResult;
+        // 1. Run Tech Stack Feasibility Agent
+        const techFeasibility = await runAgent('tech_stack_agent', userInput);
+
+        // 2. Run Integration Risk Prediction Agent
+        const integrationRisk = await runAgent('integration_risk_agent', userInput);
+
+        // 3. Run Budget/Timeline Stress-Test Agent
+        const budgetStressTest = await runAgent('budget_agent', userInput);
+
+        // 4. Run Pre-Launch Checklist Agent
+        const checklist = await runAgent('checklist_agent', userInput);
+
+        // 5. Run Lean Alternative Recommendation Agent (with RAG)
+        const leanAlternative = await runAgent('lean_agent', userInput);
+
+        // Consolidate results
+        const finalReport = {
+            projectDescription: userInput.description,
+            techStack: userInput.techStack,
+            techFeasibility: techFeasibility.response,
+            integrationRisk: integrationRisk.response,
+            budgetStressTest: budgetStressTest.response,
+            preLaunchChecklist: checklist.response,
+            leanAlternative: leanAlternative.response,
+        };
 
         // TODO: Save the report to MongoDB
         // const report = await PocReport.create(finalReport);
