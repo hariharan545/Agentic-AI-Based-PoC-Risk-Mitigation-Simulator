@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import re
 from dotenv import load_dotenv
 from langchain.agents import initialize_agent, Tool
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -32,6 +33,15 @@ agent = initialize_agent(
     agent="zero-shot-react-description",
     verbose=True
 )
+def limit_text(text, max_length):
+    return text[:max_length] if isinstance(text, str) and len(text) > max_length else text
+
+def extract_json_from_response(response):
+    cleaned = re.sub(r"^```json|^```|```$", "", response.strip(), flags=re.MULTILINE).strip()
+    try:
+        return json.loads(cleaned)
+    except Exception:
+        return None
 
 def main():
     """
@@ -43,11 +53,20 @@ def main():
         
         prompt = (
             f"Analyze the integration risks for a project with this tech stack: {user_input.get('techStack', 'Not specified')} "
-            f"and description: {user_input.get('description', 'Not specified')}."
+            f"and description: {user_input.get('description', 'Not specified')}. "
+            f"Return ONLY a valid JSON object with keys: apiFailurePoints, securityAndRateLimits, riskSeverity, mitigation. No markdown, no code block, no explanation."
         )
-        
+        prompt = limit_text(prompt, 600)
         response = agent.run(prompt)
-        print(json.dumps({"response": response}))
+        result = extract_json_from_response(response)
+        if not result:
+            result = {
+                "apiFailurePoints": response,
+                "securityAndRateLimits": "Standard OAuth and API key limits apply.",
+                "riskSeverity": "Medium",
+                "mitigation": "Implement retries and monitoring."
+            }
+        print(json.dumps(result))
     else:
         print(json.dumps({"error": "No input provided"}))
 

@@ -11,24 +11,31 @@ const PocReportSchema = new mongoose.Schema({
         required: [true, 'Please add a tech stack']
     },
     techFeasibility: {
-        type: String,
-        required: true
+        compatibilityReport: { type: String },
+        scalabilityScore: { type: Number },
+        riskScore: { type: Number },
+        deprecatedWarnings: [{ type: String }]
     },
     integrationRisk: {
-        type: String,
-        required: true
+        apiFailurePoints: { type: String },
+        securityAndRateLimits: { type: String },
+        riskSeverity: { type: String },
+        mitigation: { type: String }
     },
     budgetStressTest: {
-        type: String,
-        required: true
+        estimatedDevelopmentCosts: { type: String },
+        timelineDelays: { type: String },
+        highRiskCostAreas: [{ type: String }]
     },
     preLaunchChecklist: {
-        type: String,
-        required: true
+        functionalTests: [{ type: String }],
+        securityTasks: [{ type: String }],
+        priorityChecklist: [{ type: String }]
     },
     leanAlternative: {
-        type: String,
-        required: true
+        simplifiedStackAlternatives: [{ type: String }],
+        estimatedCostTimeSavings: { type: String },
+        prosCons: [{ type: String }]
     },
     createdAt: {
         type: Date,
