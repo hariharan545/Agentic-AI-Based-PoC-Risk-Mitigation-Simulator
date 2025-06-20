@@ -1,7 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-// const connectDB = require('./config/db'); // Will be enabled later
+const connectDB = require('./config/db'); // Enable MongoDB connection
 
 // Load env vars
 dotenv.config({ path: './config/config.env' });
@@ -16,10 +16,10 @@ app.use(express.json());
 app.use(cors());
 
 // Connect to database
-// connectDB(); // Will be enabled later
+connectDB(); // Enable MongoDB connection
 
 // Mount routers
-// app.use('/api/v1/poc', require('./routes/poc')); // Placeholder for future routes
+app.use('/api/v1/poc', require('./routes/poc')); // Enable POC routes
 
 app.get('/', (req, res) => {
     res.send('Agentic PoC Simulator API is running...');

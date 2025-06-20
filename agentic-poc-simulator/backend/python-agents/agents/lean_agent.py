@@ -3,28 +3,26 @@ import sys
 import json
 from dotenv import load_dotenv
 from langchain.agents import initialize_agent, Tool
-from langchain.chat_models import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain.retrievers import ChromaRetriever
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import Chroma
-from langchain.embeddings import OpenAIEmbeddings
 
 # Load environment variables
 load_dotenv()
-openai_api_key = os.getenv("OPENAI_API_KEY")
-if not openai_api_key:
-    sys.exit("OPENAI_API_KEY not found in .env file")
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+if not gemini_api_key:
+    sys.exit("GEMINI_API_KEY not found in .env file")
 
 # Setup Vector Store and Retriever
-# Note: This assumes the vector store has been created and populated by doc_ingestor.py
 vectorstore_path = "../data/vector_store"
-embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
+embedding = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=gemini_api_key)
 vectorstore = Chroma(persist_directory=vectorstore_path, embedding_function=embedding)
 retriever = vectorstore.as_retriever()
 
 # Setup QA Chain
 qa_chain = RetrievalQA.from_chain_type(
-    llm=ChatOpenAI(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo", temperature=0),
+    llm=ChatGoogleGenerativeAI(model="models/gemini-1.5-flash", google_api_key=gemini_api_key, temperature=0),
     chain_type="stuff",
     retriever=retriever
 )
@@ -41,7 +39,7 @@ tools = [
 # Initialize Agent
 agent = initialize_agent(
     tools=tools,
-    llm=ChatOpenAI(openai_api_key=openai_api_key, model_name="gpt-3.5-turbo", temperature=0.2),
+    llm=ChatGoogleGenerativeAI(model="models/gemini-1.5-flash", google_api_key=gemini_api_key, temperature=0.2),
     agent="chat-conversational-react-description",
     verbose=True
 )

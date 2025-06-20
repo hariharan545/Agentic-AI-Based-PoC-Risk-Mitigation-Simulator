@@ -3,13 +3,13 @@ import sys
 import json
 from dotenv import load_dotenv
 from langchain.agents import initialize_agent, Tool
-from langchain.chat_models import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 # Load environment variables
 load_dotenv()
-openai_api_key = os.getenv("OPENAI_API_KEY")
-if not openai_api_key:
-    sys.exit("OPENAI_API_KEY not found in .env file")
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+if not gemini_api_key:
+    sys.exit("GEMINI_API_KEY not found in .env file")
 
 # Placeholder for a tool that analyzes tech stack feasibility.
 # In a real implementation, this could call an API, a database, or another model.
@@ -30,7 +30,7 @@ tools = [
 
 agent = initialize_agent(
     tools=tools,
-    llm=ChatOpenAI(openai_api_key=openai_api_key, temperature=0, model_name="gpt-3.5-turbo"),
+    llm=ChatGoogleGenerativeAI(model="models/gemini-1.5-flash", google_api_key=gemini_api_key, temperature=0),
     agent="zero-shot-react-description",
     verbose=True
 )
