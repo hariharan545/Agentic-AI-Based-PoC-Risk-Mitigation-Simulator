@@ -3,14 +3,14 @@ import sys
 from dotenv import load_dotenv
 from langchain.document_loaders import DirectoryLoader, UnstructuredFileLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
+from langchain_community.embeddings import GeminiEmbeddings
 from langchain.vectorstores import Chroma
 
 # Load environment variables
 load_dotenv()
-openai_api_key = os.getenv("OPENAI_API_KEY")
-if not openai_api_key:
-    sys.exit("OPENAI_API_KEY not found in .env file")
+gemini_api_key = os.getenv("GEMINI_API_KEY")
+if not gemini_api_key:
+    sys.exit("GEMINI_API_KEY not found in .env file")
 
 # Define paths
 RAW_DATA_PATH = "../data/raw"
@@ -51,7 +51,7 @@ def ingest_documents():
 
     print("Creating embeddings and storing in ChromaDB...")
     # Create embeddings
-    embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
+    embeddings = GeminiEmbeddings(api_key=gemini_api_key)
 
     # Create and persist the vector store
     vectorstore = Chroma.from_documents(
